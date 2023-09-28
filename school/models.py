@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils import timezone
+
+from users.models import User
 
 
 class Course(models.Model):
@@ -18,8 +21,8 @@ class Lesson(models.Model):
     title = models.CharField(max_length=50, verbose_name='название')
     description = models.TextField(verbose_name='описание')
     preview = models.ImageField(upload_to='course/', verbose_name='Превью', blank=True, null=True)
-    url = models.URLField(max_length=150, verbose_name='ссылка')
-
+    video_url = models.URLField(max_length=150, verbose_name='ссылка на видео', blank=True, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='категория', blank=True, null=True)
 
     def __str__(self):
         return f'{self.title} (курс {self.course})'
@@ -29,4 +32,23 @@ class Lesson(models.Model):
         verbose_name_plural = 'уроки'
 
 
+class Payment(models.Model):
+    PAYMENT_CHOICES = [
+        ("cash", "наличные"),
+        ("money transfer", "перевод на счет"),
+]
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь', blank=True, null=True)
+    payment_date = models.DateField(default=timezone.now, verbose_name='дата оплаты')
+    payed_course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='оплаченный курс', blank=True, null=True)
+    payed_lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='оплаченный урок', blank=True, null=True)
+    amount = models.IntegerField(verbose_name='сумма оплаты')
+    payment_method = models.CharField(max_length=15, default='перевод на счет', choices=PAYMENT_CHOICES, verbose_name='способ оплаты')
+
+    def __str__(self):
+        return f'{self.user} ({self.payed_course if self.payed_course else self.payed_lesson} - {self.payment_date})'
+
+    class Meta:
+        verbose_name = 'оплата'
+        verbose_name_plural = 'оплаты'
+        ordering = ('-payment_date',)
