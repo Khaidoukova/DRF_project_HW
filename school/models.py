@@ -19,7 +19,7 @@ class Lesson(models.Model):
     description = models.TextField(verbose_name='описание')
     preview = models.ImageField(upload_to='course/', verbose_name='Превью', blank=True, null=True)
     url = models.URLField(max_length=150, verbose_name='ссылка')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='категория', blank=True, null=True)
+
 
     def __str__(self):
         return f'{self.title} (курс {self.course})'
