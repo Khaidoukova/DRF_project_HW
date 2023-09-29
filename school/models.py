@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 from django.utils import timezone
 
@@ -5,7 +7,7 @@ from users.models import User
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=50, verbose_name='название')
+    title = models.CharField(max_length=150, verbose_name='название')
     preview = models.ImageField(upload_to='course/', verbose_name='Превью', blank=True, null=True)
     description = models.TextField(verbose_name='описание')
 
@@ -18,7 +20,7 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    title = models.CharField(max_length=50, verbose_name='название')
+    title = models.CharField(max_length=150, verbose_name='название')
     description = models.TextField(verbose_name='описание')
     preview = models.ImageField(upload_to='course/', verbose_name='Превью', blank=True, null=True)
     video_url = models.URLField(max_length=150, verbose_name='ссылка на видео', blank=True, null=True)
@@ -38,8 +40,8 @@ class Payment(models.Model):
         ("money transfer", "перевод на счет"),
 ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь', blank=True, null=True)
-    payment_date = models.DateField(default=timezone.now, verbose_name='дата оплаты')
+    user = models.CharField(max_length=50,  verbose_name='пользователь', blank=True, null=True)
+    payment_date = models.DateField(default=date.today(), verbose_name='дата оплаты')
     payed_course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='оплаченный курс', blank=True, null=True)
     payed_lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name='оплаченный урок', blank=True, null=True)
     amount = models.IntegerField(verbose_name='сумма оплаты')

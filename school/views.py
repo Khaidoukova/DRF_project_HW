@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, generics
 
-from school.models import Course, Lesson
+from school.models import Course, Lesson, Payment
 from school.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 
 
@@ -33,5 +33,8 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
 
 
-class PaymentCreateAPIView(generics.CreateAPIView):
+class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+    ordering_fields = ['date_payment']
+    search_fields = ['course__name', 'lesson__name', 'payment_type']
