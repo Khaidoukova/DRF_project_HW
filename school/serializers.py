@@ -18,12 +18,6 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
-
-
-
-
-
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
