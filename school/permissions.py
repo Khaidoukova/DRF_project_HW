@@ -1,9 +1,18 @@
-from rest_framework.permissions import  BasePermission
+from rest_framework.permissions import BasePermission
 
 
-class IsOwnerOrStaff(BasePermission):
+class IsStaff(BasePermission):
 
     def has_permission(self, request, view):
-        if view.action in ['view', 'update']:
+        if request.user.is_staff:
+            if request.method in ['DELETE', 'POST']:
+                return False
+        return True
+
+
+class IsOwner(BasePermission):
+
+    def has_permission(self, request, view, obj):
+        if request.user() == obj.owner:
             return True
-        return request.user == view.get_object().owner
+

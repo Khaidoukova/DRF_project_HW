@@ -1,18 +1,41 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, generics
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from school.models import Course, Lesson, Payment
-from school.permissions import IsOwnerOrStaff
+from school.permissions import IsStaff, IsOwner
 from school.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaff | IsOwner]
+
+    def get_queryset(self):
+
+        if self.request.user.role == self.request.user.is_staff:
+            return Course.objects.all()
+        else:
+            return Course.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+
+        if self.request.user == self.request.user.is_staff:
+            raise PermissionDenied("Вы не можете создавать новые курсы!")
+        else:
+            new_course = serializer.save()
+            new_course.owner = self.request.user
+            new_course.save()
+
+    def perform_destroy(self, instance):
+
+        if self.request.user.role == self.request.user.is_staff:
+            raise PermissionDenied("Вы не можете удалять курсы!")
+        instance.delete()
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
@@ -20,32 +43,50 @@ class LessonCreateAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        new_lesson = serializer.save()
-        new_lesson.owner = self.request.user
-        new_lesson.save()
+
+        if self.request.user == self.request.user.is_staff:
+            raise PermissionDenied("Вы не можете создавать новые уроки!")
+        else:
+            new_lesson = serializer.save()
+            new_lesson.owner = self.request.user
+            new_lesson.save()
 
 
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner | IsOwner]
+
+    def get_queryset(self):
+
+        if self.request.user == self.request.user.is_staff:
+            return Lesson.objects.all()
+        else:
+            return Lesson.objects.filter(owner=self.request.user)
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner | IsOwner]
+
+    def get_queryset(self):
+
+        if self.request.user == self.request.user.is_staff:
+            return Lesson.objects.all()
+        else:
+            return Lesson.objects.filter(owner=self.request.user)
 
 
 class LessonUpdateAPIView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsOwnerOrStaff]
+    permission_classes = [IsOwner]
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
-    permission_classes = [IsOwnerOrStaff]
+    permission_classes = [IsOwner]
 
 
 class PaymentCreateAPIView(generics.CreateAPIView):
@@ -69,9 +110,5 @@ class PaymentListAPIView(generics.ListAPIView):
     ordering_fields = ('payment_date',)
     permission_classes = [IsAuthenticated]
 
-
-class PaymentCreateAPIView(generics.CreateAPIView):
-    serializer_class = PaymentSerializer
-    permission_classes = [IsAuthenticated]
 
 
