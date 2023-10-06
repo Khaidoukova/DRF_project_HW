@@ -5,9 +5,9 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from school.models import Course, Lesson, Payment
+from school.models import Course, Lesson, Payment, Subscription
 from school.permissions import IsStaff, IsOwner
-from school.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
+from school.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -17,7 +17,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
 
-        if self.request.user.role == self.request.user.is_staff:
+        if self.request.user == self.request.user.is_staff:
             return Course.objects.all()
         else:
             return Course.objects.filter(owner=self.request.user)
@@ -55,7 +55,7 @@ class LessonCreateAPIView(generics.CreateAPIView):
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated, IsOwner | IsOwner]
+    permission_classes = [IsAuthenticated, IsStaff | IsOwner]
 
     def get_queryset(self):
 
@@ -68,7 +68,7 @@ class LessonListAPIView(generics.ListAPIView):
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated, IsOwner | IsOwner]
+    permission_classes = [IsAuthenticated, IsStaff | IsOwner]
 
     def get_queryset(self):
 
@@ -108,6 +108,24 @@ class PaymentListAPIView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ('payed_course', 'payed_lesson', 'user', 'payment_method', )
     ordering_fields = ('payment_date',)
+    permission_classes = [IsAuthenticated]
+
+
+class SubscriptionCreateAPIView(generics.CreateAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
+    permission_classes = [IsAuthenticated]
+
+
+class SubscriptionListAPIView(generics.ListAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Lesson.objects.all()
+    permission_classes = [IsOwner | IsStaff]
+
+
+class SubscriptionDestroyAPIView(generics.DestroyAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
     permission_classes = [IsAuthenticated]
 
 

@@ -12,7 +12,7 @@ class IsStaff(BasePermission):
 
 class IsOwner(BasePermission):
 
-    def has_permission(self, request, view, obj):
+    def has_object_permission(self, request, view, obj):
         if request.user() == obj.owner:
             return True
 
