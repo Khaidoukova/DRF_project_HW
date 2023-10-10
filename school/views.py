@@ -8,12 +8,14 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from school.models import Course, Lesson, Payment, Subscription
 from school.permissions import IsStaff, IsOwner
 from school.serializers import CourseSerializer, LessonSerializer, PaymentSerializer, SubscriptionSerializer
+from school.paginators import LessonsPaginator, CoursePaginator
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
     permission_classes = [IsAuthenticated, IsStaff | IsOwner]
+    pagination_class = CoursePaginator
 
     def get_queryset(self):
 
@@ -56,6 +58,7 @@ class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsStaff | IsOwner]
+    pagination_class = LessonsPaginator
 
     def get_queryset(self):
 
@@ -81,12 +84,12 @@ class LessonRetrieveAPIView(generics.RetrieveAPIView):
 class LessonUpdateAPIView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsOwner]
+    # permission_classes = [IsOwner]
 
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
-    permission_classes = [IsOwner]
+    # permission_classes = [IsOwner]
 
 
 class PaymentCreateAPIView(generics.CreateAPIView):
@@ -114,16 +117,16 @@ class PaymentListAPIView(generics.ListAPIView):
 class SubscriptionCreateAPIView(generics.CreateAPIView):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
 
 
 class SubscriptionListAPIView(generics.ListAPIView):
     serializer_class = SubscriptionSerializer
-    queryset = Lesson.objects.all()
-    permission_classes = [IsOwner | IsStaff]
+    queryset = Subscription.objects.all()
+    #permission_classes = [IsOwner | IsStaff]
 
 
-class SubscriptionDestroyAPIView(generics.DestroyAPIView):
+class SubscriptionDeleteAPIView(generics.DestroyAPIView):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
     permission_classes = [IsAuthenticated]
